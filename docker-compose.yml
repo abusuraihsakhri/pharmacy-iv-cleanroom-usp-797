@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  pharmacy-iv-cleanroom-usp-797:
+    build: .
+    container_name: pharmacy-iv-cleanroom-usp-797
+    ports:
+      - "8000:8000"
+    environment:
+      - AUDIT_SECRET_KEY=pharmacy-iv-cleanroom-usp-797-prod-audit-key-2026
+      - MODEL_PROVIDER=mock
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

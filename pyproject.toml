@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pharmacy-iv-cleanroom-usp-797"
+version = "2.0.0"
+description = "USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date"
+readme = "README.md"
+authors = [{ name = "Dr. Abu Suraih Sakhri", email = "abusuraih@example.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security/Cryptography",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+pharmacy-iv-cleanroom-usp-797 = "usp_797_cleanroom.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/abusuraihsakhri/pharmacy-iv-cleanroom-usp-797"
+Repository = "https://github.com/abusuraihsakhri/pharmacy-iv-cleanroom-usp-797.git"
