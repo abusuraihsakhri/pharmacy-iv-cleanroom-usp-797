@@ -3,10 +3,8 @@ Enrichment Feature Implementation for pharmacy-iv-cleanroom-usp-797.
 Generated based on domain-specific requirements in specifications.
 """
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 import datetime
-import math
-import json
 
 # =============================================================================
 # 1. ISO CLASS 5/7/8 ENVIRONMENTAL MONITORING INTEGRATION

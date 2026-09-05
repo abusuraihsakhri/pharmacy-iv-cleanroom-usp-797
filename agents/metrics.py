@@ -1,7 +1,6 @@
 """
 Prometheus Operational Metrics Exporter for pharmacy-iv-cleanroom-usp-797.
 """
-import time
 from typing import Dict, Any
 
 class SystemMetricsCollector:
