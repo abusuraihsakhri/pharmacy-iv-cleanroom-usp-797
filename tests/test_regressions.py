@@ -89,3 +89,15 @@ def test_browser_demonstration_has_no_signed_hash():
     assert "audit_hash:null" in html
     assert "fetch(" in html
     assert "URL.createObjectURL" in html
+
+
+def test_metrics_report_actual_latest_urgency():
+    response = client.post("/api/audit", json={
+        "task_id": "DEMO-METRICS", "target_identifier": "ZONE-A",
+        "primary_metric": 1, "secondary_metric": 1,
+        "status_descriptor": "NOMINAL", "is_critical_flag": True,
+    })
+    assert response.status_code == 200
+    metrics = client.get("/metrics")
+    assert metrics.status_code == 200
+    assert metrics.json()["system_status"] == "CRITICAL_STAT_PANIC"
