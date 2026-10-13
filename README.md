@@ -1,186 +1,64 @@
 # Pharmacy IV Cleanroom USP 797
 
-> **Domain:** Clinical Decision Support & Biomedical Computing
-> **Reference Guidelines & Standards:** USP <797> Pharmaceutical Compounding, CAP / CLSI / ISO Standards
+A Python threshold-evaluation prototype with a browser demonstration, CLI, and optional FastAPI API. It explores software workflows associated with sterile-compounding environmental monitoring. It **does not implement or validate USP <797> compliance**.
 
-<div align="center">
+## Browser demonstrator
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB.svg?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.111-009688.svg?logo=fastapi&logoColor=white)
-![Audit Trail](https://img.shields.io/badge/Audit-HMAC--SHA256_Tamper--Evident-brightgreen.svg)
-![Zero-PHI Guard](https://img.shields.io/badge/Guard-Zero--PHI_Outbound-blue.svg)
-![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)
+Open [web/index.html](web/index.html) in a modern browser for a local demonstration that runs without Python. It provides an optional same-origin server mode when FastAPI is running. A GitHub Pages deployment workflow is included; its live URL will be documented only after successful publication and verification.
 
-</div>
+**Safety boundary:** The built-in primary (25.0) and secondary (12.0) thresholds are illustrative values without assigned units, **not** USP <797> limits. This code does not classify cleanrooms, calculate beyond-use dates (BUDs), verify sterility or stability, or issue compliance certifications. Do not use its results to release sterile preparations, assign BUDs, or make patient-care decisions.
 
----
+## Implemented functionality
 
-## 📖 What It Does
+- Generic numerical threshold and keyword alerts with urgency classification.
+- Multi-worker coordinator in the agents directory and a separate USP-named demonstration subsystem.
+- JSON dossiers, CLI checks, CSV batches, and a process-memory HMAC-SHA256 audit chain.
+- Eight enrichment modules that apply similar generic threshold logic to different workflow labels (not instrument integrations).
+- Mock-only chat; no real external model provider is connected.
 
-Pharmacy IV Cleanroom USP 797 is an enterprise-grade clinical decision support system for sterile compounding cleanroom environment monitoring and beyond-use-date (BUD) compliance. It provides:
+## Run locally
 
-- **Multi-Agent Evaluation Engine**: Three specialized workers (InvariantQC, SafetyEscalation, ProtocolConformance) evaluate task payloads against clinical thresholds
-- **USP-797 Sentinel**: Dedicated subsystem for ISO Class 5/7/8 environmental monitoring, pressure differentials, and BUD calculations
-- **Enrichment Suite**: 8 domain-specific engines for media fill documentation, hazardous drug handling, staff training, and quality assurance
-- **Tamper-Evident Audit Trail**: HMAC-SHA256 chained cryptographic audit logs for every evaluation
-- **Zero-PHI Outbound Guard**: Active pattern detection blocking SSNs, MRNs, phone numbers, and patient identifiers
+Requires Python 3.9 or later.
 
----
-
-## ⚙️ Key Capabilities & Algorithmic Modules
-
-- **Deterministic Calculation Engine**: Strict compliance with USP <797> formulations and thresholds
-- **Risk & Urgency Classification**: Multi-tier categorization (ROUTINE, ELEVATED_RISK, CRITICAL_STAT_PANIC) with automated clinical/operational action recommendations
-- **Validation & Guardrails**: Rigorous input bounds checking, finite number validation, and control character injection prevention
-- **Prometheus Telemetry**: Operational metrics export for monitoring
-- **Active Learning Calibration**: Bayesian worker reliability weight tracking
-
----
-
-## 💻 Installation
-
-```bash
-# Clone the repository
+~~~bash
 git clone https://github.com/abusuraihsakhri/pharmacy-iv-cleanroom-usp-797.git
 cd pharmacy-iv-cleanroom-usp-797
-
-# Install dependencies
-pip install fastapi uvicorn pydantic pytest
-
-# Optional: Set audit secret key for persistent audit integrity
-export AUDIT_SECRET_KEY="your-secure-random-key-here"
-```
-
----
-
-## 💻 CLI Quickstart & Usage
-
-### 1. Single Task Evaluation
-```bash
-python cli.py audit --task-id TASK-001 --target TARGET-01 --primary 28.5 --secondary 14.2 --critical --status DISCORDANT
-```
-
-### 2. System Configuration Query
-```bash
-python cli.py chat "What is the system status?"
-```
-
-### 3. Batch CSV Processing
-```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[api,test]"
+python -m pytest -q
+python cli.py audit --task-id DEMO-001 --target ZONE-A --primary 29.4 --secondary 14.8
 python cli.py batch -i sample.csv -o results.csv
-```
-
-### 4. Verify Audit Trail Integrity
-```bash
-python cli.py verify-audit
-```
-
-### 5. Launch REST API Server
-```bash
 python cli.py serve --host 127.0.0.1 --port 8000
-```
+~~~
 
-### Parameter Reference
-- `--task-id`: Unique task/case identifier (required, max 128 chars)
-- `--target`: Entity or target identifier (required, max 128 chars)
-- `--primary`: Primary domain measurement (float, finite)
-- `--secondary`: Secondary kinetic/confidence score (float, finite)
-- `--critical`: Emergency escalation flag (boolean)
-- `--status`: Status code or phenotype descriptor (max 64 chars)
+Visit http://127.0.0.1:8000/ for the browser UI; select server mode only while the backend runs. The API exposes GET /health, POST /api/audit, POST /api/chat, GET /metrics (JSON counters), and /docs.
 
-### Input Data Schema
+The installed command pharmacy-iv-cleanroom-usp-797 uses the separate USP-named CLI, while python cli.py runs the main multi-worker prototype. They have distinct thresholds and output schemas.
 
-| Field | Description | Requirement |
-|:------|:------------|:------------|
-| `task_id` | Unique task/case identifier | Required, max 128 chars |
-| `target_identifier` | Entity or target identifier | Required, max 128 chars |
-| `primary_metric` | Primary domain measurement | Required, finite float |
-| `secondary_metric` | Secondary kinetic score | Optional, finite float |
-| `is_critical_flag` | Emergency escalation trigger | Optional, boolean |
-| `status_descriptor` | Status code or phenotype | Optional, max 64 chars |
+## Security and privacy
 
----
+- Enter only synthetic non-identifying data. Pattern-based checks are **not** comprehensive de-identification or HIPAA-compliant protection.
+- Browser mode makes no background requests or persistent storage writes. Results remain in page memory unless explicitly exported as JSON.
+- Server mode sends inputs to the selected same-origin API. Server dossiers and audit-chain entries live only in process memory and disappear on restart; integrity checks performed in a new process cannot validate old entries.
+- Reading GET /api/audit/logs requires the X-Audit-Token header matching a configured AUDIT_READ_TOKEN; without that environment variable the route is unavailable.
+- Use a network boundary or external authentication before exposing other API routes to untrusted clients.
+- Configure a strong AUDIT_SECRET_KEY. Without one the process creates an ephemeral key and warns. A sample audit key existed in repository history: never reuse it; rotate it if ever deployed.
+- Compose now binds its published port to 127.0.0.1 and requires AUDIT_SECRET_KEY from the environment. Never commit audit keys or real patient data.
+- The HMAC chain is in-process tamper evidence, not a durable compliance record.
 
-## 🛡️ Security & Enterprise Architecture
+## Testing and deployment
 
-* **Zero-PHI Outbound Interceptor:** Active regex inspection blocking SSNs, MRNs, phone numbers, emails, DOB patterns, and patient identifiers
-* **Tamper-Evident HMAC-SHA256 Audit Trail:** Chained, cryptographically signed logs with full signature verification for every evaluation
-* **Input Validation:** Pydantic v2 models with field validators preventing control character injection and ensuring finite numeric values
-* **Secure Defaults:** Ephemeral key generation when AUDIT_SECRET_KEY is not set (with warning)
-* **FastAPI & Prometheus Telemetry:** Exposes OpenAPI 3.1 REST endpoints and operational Prometheus metrics (`/metrics`)
+~~~bash
+python -m pytest -q
+python -m compileall -q agents usp_797_cleanroom cli.py enrichment.py simulator.py
+python simulator.py 100
+~~~
 
----
+GitHub Actions verifies Python 3.10–3.12 and checks browser JavaScript syntax. The browser demonstrator uses standard HTML, CSS and JavaScript, not Pyodide or backend Python in GitHub Pages. Modern Chromium, Firefox and Safari are expected to work; deployment-specific browser testing is still necessary.
 
-## 🧪 Testing & Verification
+Consult the [official USP <797> resource](https://www.usp.org/compounding/general-chapter-797) and local regulations for actual sterile-compounding requirements.
 
-Run the automated test suite:
+## License
 
-```bash
-pytest -v
-```
-
-Execute high-throughput batch simulation benchmarks:
-
-```bash
-python simulator.py 1000
-```
-
----
-
-## 🐳 Container Deployment
-
-```bash
-docker build -t pharmacy-iv-cleanroom-usp-797 .
-docker run -p 8000:8000 -e AUDIT_SECRET_KEY=your-secure-key pharmacy-iv-cleanroom-usp-797
-```
-
-Or using Docker Compose:
-
-```bash
-docker-compose up -d
-```
-
----
-
-## 📁 Project Structure
-
-```
-pharmacy-iv-cleanroom-usp-797/
-├── agents/                      # Main multi-agent evaluation system
-│   ├── __init__.py
-│   ├── api.py                   # FastAPI REST server
-│   ├── base.py                  # Security, PHI guard, HMAC audit trail
-│   ├── learning.py              # Bayesian calibration engine
-│   ├── llm_factory.py           # LLM provider factory
-│   ├── metrics.py               # Prometheus metrics collector
-│   ├── models.py                # Pydantic v2 data models
-│   ├── streamer.py              # WebSocket telemetry broadcaster
-│   ├── supervisor.py            # Master orchestrator
-│   └── workers.py               # Specialized evaluation workers
-├── usp_797_cleanroom/           # USP-797 Sentinel subsystem
-│   ├── __init__.py
-│   ├── agents.py                # Sub-agents (DifferentialPressure, AirParticleCount, BeyondUseDate)
-│   ├── cli.py                   # CLI for USP-797 subsystem
-│   ├── engine.py                # Core algorithmic engine
-│   ├── models.py                # Dataclass models with validation
-│   └── server.py                # FastAPI server factory
-├── tests/                       # Pytest test suite
-│   ├── test_pharmacy_iv_cleanroom_usp_797.py
-│   ├── test_usp_797_cleanroom.py
-│   └── test_enrichment.py
-├── web/                         # Operations console (HTML/JS)
-├── cli.py                       # Main CLI entry point
-├── enrichment.py                # 8 domain-specific enrichment engines
-├── simulator.py                 # High-throughput stress testing
-├── pyproject.toml               # Project metadata and dependencies
-├── Dockerfile                   # Container build instructions
-├── docker-compose.yml           # Multi-container orchestration
-└── .github/workflows/ci.yml     # CI/CD pipeline
-```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](LICENSE).

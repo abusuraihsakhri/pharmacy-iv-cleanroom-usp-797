@@ -105,6 +105,6 @@ class USP797Coordinator:
         if "status" in q or "ledger" in q:
             return f"USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date currently managing {len(self.execution_ledger)} execution tasks in air-gapped memory."
         elif "standard" in q or "spec" in q:
-            return "Active runtime operating strictly according to USP <797> Pharmaceutical Compounding specifications."
+            return "This research prototype uses illustrative threshold checks; USP <797> compliance is not assessed."
         else:
-            return f"USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date executive coordinator online. Zero-telemetry on-premises surveillance active."
+            return f"USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date demonstration coordinator available. No automatic environmental monitoring is connected."

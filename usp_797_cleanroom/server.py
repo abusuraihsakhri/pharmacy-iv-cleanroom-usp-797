@@ -15,7 +15,7 @@ def create_app():
 
         app = FastAPI(
             title="USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date",
-            description="Audits ISO Class 5/7/8 particle counts, pressure differentials (in. w.g.), air changes per hour (ACPH), and BUD limits.",
+            description="Experimental threshold and descriptor checks only. Does not calculate beyond-use dates or establish USP <797> compliance.",
             version="2.0.0-FRONTIER",
         )
 

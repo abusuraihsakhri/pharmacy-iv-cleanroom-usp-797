@@ -4,7 +4,7 @@ FastAPI REST API Server for Pharmacy Iv Cleanroom Usp 797.
 import os
 import secrets
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 from fastapi.responses import FileResponse
@@ -17,7 +17,7 @@ supervisor = SystemSupervisor(model_provider="mock")
 app = FastAPI(
     title="Pharmacy Iv Cleanroom Usp 797 API",
     description="Illustrative threshold audit; not validated for clinical or USP <797> compliance decisions.",
-    version="3.0.0-ENTERPRISE",
+    version="2.0.0",
 )
 
 
@@ -63,7 +63,7 @@ def api_chat(req: ChatRequest):
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs(x_audit_token: str | None = Header(default=None)):
+def api_audit_logs(x_audit_token: Optional[str] = Header(default=None)):
     expected = os.getenv("AUDIT_READ_TOKEN")
     if not expected or not x_audit_token or not secrets.compare_digest(x_audit_token, expected):
         raise HTTPException(status_code=403, detail="Audit log access disabled or unauthorized")
