@@ -5,9 +5,9 @@ services:
     build: .
     container_name: pharmacy-iv-cleanroom-usp-797
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
-      - AUDIT_SECRET_KEY=pharmacy-iv-cleanroom-usp-797-prod-audit-key-2026
+      - AUDIT_SECRET_KEY=${AUDIT_SECRET_KEY:?Set a strong AUDIT_SECRET_KEY in your environment}
       - MODEL_PROVIDER=mock
     restart: unless-stopped
     healthcheck:

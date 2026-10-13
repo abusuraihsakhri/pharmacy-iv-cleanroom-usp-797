@@ -10,8 +10,8 @@ coordinator = USP797Coordinator()
 
 def create_app():
     try:
-        from fastapi import FastAPI
-        from pydantic import BaseModel
+        from fastapi import FastAPI, HTTPException
+        from pydantic import BaseModel, Field
 
         app = FastAPI(
             title="USP-797 Sentinel: Sterile Compounding Cleanroom Environment & Beyond-Use-Date",
@@ -26,7 +26,7 @@ def create_app():
             secondary_metric: float = 14.2
             status_descriptor: str = "DISCORDANT_ANOMALY"
             is_critical_flag: bool = True
-            attributes: Dict[str, Any] = {}
+            attributes: Dict[str, Any] = Field(default_factory=dict)
 
         class ChatRequest(BaseModel):
             query: str
@@ -37,7 +37,8 @@ def create_app():
 
         @app.post("/api/audit")
         def api_audit(req: TaskRequest):
-            payload = FrontierPayload(
+            try:
+                payload = FrontierPayload(
                 task_id=req.task_id,
                 target_identifier=req.target_identifier,
                 primary_metric=req.primary_metric,
@@ -45,7 +46,9 @@ def create_app():
                 status_descriptor=req.status_descriptor,
                 is_critical_flag=req.is_critical_flag,
                 attributes=req.attributes,
-            )
+                )
+            except (ValueError, TypeError):
+                raise HTTPException(status_code=422, detail="Invalid audit payload") from None
             return coordinator.process(payload)
 
         @app.post("/api/chat")

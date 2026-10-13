@@ -1,10 +1,14 @@
 """
 FastAPI REST API Server for Pharmacy Iv Cleanroom Usp 797.
 """
+import os
+import secrets
+from pathlib import Path
 from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
-from .base import AuditLogger, PHIGuard
+from fastapi.responses import FileResponse
+from .base import AuditLogger, PHIGuard, SecurityException
 from .models import SystemTaskPayload, ConsensusDossier
 from .supervisor import SystemSupervisor
 
@@ -12,13 +16,18 @@ supervisor = SystemSupervisor(model_provider="mock")
 
 app = FastAPI(
     title="Pharmacy Iv Cleanroom Usp 797 API",
-    description="Enterprise Distributed Component Platform (Clinical & Biomedical AI)",
+    description="Illustrative threshold audit; not validated for clinical or USP <797> compliance decisions.",
     version="3.0.0-ENTERPRISE",
 )
 
 
 class ChatRequest(BaseModel):
     query: str
+
+
+@app.get("/", include_in_schema=False)
+def console():
+    return FileResponse(Path(__file__).resolve().parent.parent / "web" / "index.html")
 
 
 @app.get("/health")
@@ -37,7 +46,10 @@ def metrics():
 
 @app.post("/api/audit")
 def api_audit(payload: SystemTaskPayload):
-    dossier = supervisor.process_task(payload)
+    try:
+        dossier = supervisor.process_task(payload)
+    except SecurityException:
+        raise HTTPException(status_code=422, detail="Sensitive identifier in input") from None
     return dossier.to_dict()
 
 
@@ -46,10 +58,13 @@ def api_chat(req: ChatRequest):
     try:
         ans = supervisor.query_supervisory_chat(req.query)
         return {"response": ans}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    except SecurityException:
+        raise HTTPException(status_code=422, detail="Sensitive identifier in input") from None
 
 
 @app.get("/api/audit/logs")
-def api_audit_logs():
+def api_audit_logs(x_audit_token: str | None = Header(default=None)):
+    expected = os.getenv("AUDIT_READ_TOKEN")
+    if not expected or not x_audit_token or not secrets.compare_digest(x_audit_token, expected):
+        raise HTTPException(status_code=403, detail="Audit log access disabled or unauthorized")
     return {"audit_trail": AuditLogger.get_trail(), "verified": AuditLogger.verify_integrity()}

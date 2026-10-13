@@ -6,7 +6,7 @@ import csv
 import sys
 from agents.models import SystemTaskPayload
 from agents.supervisor import SystemSupervisor
-from agents.base import AuditLogger
+from agents.base import AuditLogger, SecurityException
 
 supervisor = SystemSupervisor(model_provider="mock")
 
@@ -91,7 +91,8 @@ def main(argv=None):
             print(f"Error: Failed to parse CSV: {e}", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        computed_fields = ["overall_urgency", "integrity_status", "total_alerts", "audit_hash"]
+        out_fields = list(dict.fromkeys(fieldnames + computed_fields))
         out_rows = []
         errors = 0
         for idx, r in enumerate(rows):
@@ -111,9 +112,9 @@ def main(argv=None):
                 row_dict["total_alerts"] = dossier.total_alerts
                 row_dict["audit_hash"] = dossier.audit_hash
                 out_rows.append(row_dict)
-            except (ValueError, TypeError) as e:
+            except (ValueError, TypeError, SecurityException):
                 errors += 1
-                print(f"Warning: Skipping row {idx+1}: {e}", file=sys.stderr)
+                print(f"Warning: Skipping row {idx+1}: invalid or sensitive input", file=sys.stderr)
 
         with open(args.output, mode="w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=out_fields)

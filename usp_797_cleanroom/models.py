@@ -29,15 +29,15 @@ class FrontierPayload:
 
     def __post_init__(self):
         """Validate fields after initialization."""
-        if not isinstance(self.task_id, str) or len(self.task_id) > 128:
+        if not isinstance(self.task_id, str) or not self.task_id.strip() or len(self.task_id) > 128:
             raise ValueError("task_id must be a string with max length 128")
-        if not isinstance(self.target_identifier, str) or len(self.target_identifier) > 128:
+        if not isinstance(self.target_identifier, str) or not self.target_identifier.strip() or len(self.target_identifier) > 128:
             raise ValueError("target_identifier must be a string with max length 128")
-        if not isinstance(self.status_descriptor, str) or len(self.status_descriptor) > 64:
+        if not isinstance(self.status_descriptor, str) or not self.status_descriptor.strip() or len(self.status_descriptor) > 64:
             raise ValueError("status_descriptor must be a string with max length 64")
-        if not math.isfinite(self.primary_metric):
+        if not isinstance(self.primary_metric, (int, float)) or isinstance(self.primary_metric, bool) or not math.isfinite(self.primary_metric):
             raise ValueError("primary_metric must be a finite number")
-        if not math.isfinite(self.secondary_metric):
+        if not isinstance(self.secondary_metric, (int, float)) or isinstance(self.secondary_metric, bool) or not math.isfinite(self.secondary_metric):
             raise ValueError("secondary_metric must be a finite number")
 
 
