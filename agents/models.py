@@ -22,8 +22,8 @@ class SystemIntegrityStatus(str, Enum):
 
 
 class SystemTaskPayload(BaseModel):
-    task_id: str = Field(..., description="Unique task / case identifier", max_length=128)
-    target_identifier: str = Field(..., description="Entity, patient key, or genomic/cryptographic target", max_length=128)
+    task_id: str = Field(..., description="Unique task / case identifier", min_length=1, max_length=128)
+    target_identifier: str = Field(..., description="Non-identifying entity key", min_length=1, max_length=128)
     primary_metric: float = Field(..., description="Primary domain measurement or score")
     secondary_metric: float = Field(default=0.0, description="Secondary kinetic or confidence score")
     status_descriptor: str = Field(default="NOMINAL", description="Status code or phenotype descriptor", max_length=64)
@@ -35,9 +35,12 @@ class SystemTaskPayload(BaseModel):
     @classmethod
     def sanitize_string_fields(cls, v: str) -> str:
         """Prevent control character injection in string fields."""
-        if any(ord(c) < 32 and c not in "\t\n\r" for c in v):
+        if any(ord(c) < 32 or ord(c) == 127 for c in v):
             raise ValueError("Control characters not allowed in string fields")
-        return v.strip()
+        value = v.strip()
+        if not value:
+            raise ValueError("Identifier or descriptor must not be blank")
+        return value
 
     @field_validator("primary_metric", "secondary_metric")
     @classmethod

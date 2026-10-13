@@ -80,7 +80,7 @@ def main(argv=None):
             print(f"Error: Failed to parse CSV: {e}", file=sys.stderr)
             return 1
 
-        out_fields = fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]
+        out_fields = list(dict.fromkeys(fieldnames + ["overall_status", "total_alerts", "critical_count", "consensus_summary"]))
         out_rows = []
         errors = 0
         for idx, r in enumerate(rows):
